@@ -1,0 +1,164 @@
+package rtorrent
+
+import (
+	"encoding/xml"
+	"log"
+)
+
+
+
+
+/*
+<?xml version="1.0" encoding="UTF-8"?>
+<methodResponse>
+    <params>
+        <param>
+            <value>
+                <i8>1</i8>
+            </value>
+        </param>
+    </params>
+</methodResponse>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<methodResponse>
+    <params>
+        <param>
+            <value>
+                <array>
+                    <data>
+                        <value>
+                            <string>BCEE5E0545827643808B1901652F0433DE08CC91</string>
+                        </value>
+                        <value>
+                            <string>61C88752FB8DE4AA0C21BD21C6B3CF257245B524</string>
+                        </value>
+                    </data>
+                </array>
+            </value>
+        </param>
+    </params>
+</methodResponse>
+*/
+
+/*
+type methodResponse struct{
+	Params struct{
+		Param struct {
+			Value struct{
+
+				Array *struct{
+					Data []struct {
+						Value struct {
+							String string `xml:"string"`
+						} `xml:"value"`
+					} `xml:"data"`
+				} `xml:"array"`
+
+				I8 *int `xml:"i8"`
+
+			} `xml:"value"`
+		} `xml:"param"`
+	} `xml:"params"`
+}
+*/
+
+type methodResponse struct{
+	Params Params `xml:"params"`
+}
+
+type Params struct {
+	Param Param `xml:"param"`
+}
+
+type Param struct {
+	Value Value `xml:"value"`
+}
+
+type Value struct {
+	Array *Array `xml:"array"`
+	I8 *int `xml:"i8"`
+	String *string `xml:"string"`
+}
+
+type Array struct{
+	Data []Value `xml:"data"`
+}
+
+func MarshalMethodResponse(){
+
+	var s1 = "abc"
+	var s2 = "cde"
+
+	var mr = methodResponse{
+		Params{
+			Param: Param{
+				Value:Value{
+					Array: &Array{
+						Data: [] Value{ { String:&s1}, { String:&s2} },
+					},
+				},
+			},
+		},
+	}
+
+
+	b, _ := xml.MarshalIndent(mr, "", "  ")
+	log.Println(string(b))
+
+	i1, i2, i3 := 1,2,3
+	s1, s2, s3 := "a", "b", "c"
+
+	mt := MainType{
+		Prop1:Prop1{
+			Value:[]Value1{
+				{ TheInt: &i1, TheString:&s1},
+				{ TheInt: &i2, TheString:&s2},
+				{ TheInt: &i3, TheString:&s3},
+			},
+		},
+	}
+
+	b, _ = xml.MarshalIndent(mt, "", " ")
+	log.Println(string(b))
+
+
+}
+
+type Value1 struct {
+	TheInt *int `xml:"theint"`
+	TheString *string `xml:"thestring"`
+}
+
+type Prop1 struct {
+	Value []Value1 `xml:"value"`
+}
+
+type MainType struct {
+	Prop1 Prop1 `xml:"prop1"`
+}
+
+
+func MarshalMethodResponse2(){
+
+	var mr CmethodResponse = CmethodResponse{
+		Cparams:&Cparams{
+			Cparam:&Cparam{
+				Cvalue:[]*Cvalue{
+					{ Carray:&Carray{
+						Cdata:&Cdata{
+							Cvalue:[]*Cvalue{
+								{Cstring: &Cstring{ String: "abcd"}},
+								{Cstring: &Cstring{ String: "efgh"}},
+								{Cstring: &Cstring{ String: "ijkl"}},
+							},
+						},
+					}},
+				},
+			},
+		},
+	}
+
+	b, _ := xml.MarshalIndent(mr, "", "  ")
+	log.Println(string(b))
+}

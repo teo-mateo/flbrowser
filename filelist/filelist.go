@@ -7,15 +7,20 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"github.com/teo-mateo/flbrowser/dto"
 
 	"github.com/PuerkitoBio/goquery"
 	//"golang.org/x/net/html"
 	"golang.org/x/net/publicsuffix"
+	"mime"
+	"errors"
+	"io/ioutil"
 )
 
 var flurl, _ = url.Parse("https://filelist.ro")
 var flurlLogin, _ = url.Parse("https://filelist.ro/takelogin.php")
 var flurlBrowse, _ = url.Parse("https://filelist.ro/browse.php")
+var flurlDownload, _ = url.Parse("https://filelist.ro/download.php")
 
 var client *http.Client
 
@@ -80,10 +85,50 @@ func login() error {
 	return err
 }
 
-// GetTorrents returns torrents
-func GetTorrents(category int, page int) ([]TorrentInfo, error) {
+func DownloadTorrent(id int) (string, []byte, error) {
 
-	login()
+	err := login()
+	if err != nil{
+		return "", nil, err
+	}
+
+	q := flurlDownload.Query()
+	q.Add("id", strconv.Itoa(id))
+	flurlDownload.RawQuery = q.Encode()
+
+	response, err := client.Get(flurlDownload.String())
+	if err != nil{
+		return "", nil, err
+	}
+
+	cd := response.Header.Get("content-disposition")
+	if cd == ""{
+		return "", nil, errors.New("content-disposition: missing filename")
+	}
+	_, params, err := mime.ParseMediaType(cd)
+	if err != nil{
+		return "", nil, err
+	}
+
+	filename := params["filename"]
+
+	defer response.Body.Close()
+	bytes, err := ioutil.ReadAll(response.Body)
+
+	return filename, bytes, nil
+
+
+
+	return "", nil, nil
+}
+
+// GetTorrents returns torrents
+func GetTorrents(category int, page int) ([]dto.FLTorrentInfo, error) {
+
+	err := login()
+	if err != nil{
+		return nil, err
+	}
 
 	q := flurlBrowse.Query()
 	q.Add("search", "")
@@ -108,10 +153,10 @@ func GetTorrents(category int, page int) ([]TorrentInfo, error) {
 		return nil, err
 	}
 
-	torrents := make([]TorrentInfo, 0)
+	torrents := make([]dto.FLTorrentInfo, 0)
 	doc.Find(".torrentrow").Each(func(i int, s *goquery.Selection) {
 
-		ti := TorrentInfo{}
+		ti := dto.FLTorrentInfo{}
 
 		// torrent name
 		html, err := s.Find("b").First().Html()
@@ -126,6 +171,11 @@ func GetTorrents(category int, page int) ([]TorrentInfo, error) {
 			if ok {
 				if strings.Index(href, "download.php") == 0 && strings.Index(href, "usetoken") == -1 {
 					ti.DlURL = href
+					id1:=strings.Replace(href, "download.php?id=", "", 1)
+					id, err := strconv.Atoi(id1)
+					if err == nil{
+						ti.ID = id
+					}
 				}
 			}
 		})
@@ -191,15 +241,4 @@ func GetTorrents(category int, page int) ([]TorrentInfo, error) {
 
 	return torrents, nil
 
-}
-
-// TorrentInfo - torrent information
-type TorrentInfo struct {
-	Name  string `json:"name"`
-	DlURL string `json:"dlurl"`
-	DateAded string `json:"dateadded"`
-	Size string `json:"size"`
-	TimesDownloaded string `json:"timesdownloaded"`
-	Seeders string `json:"seeders"`
-	Leechers string `json:"leechers"`
 }
