@@ -11,7 +11,6 @@ import (
 	"github.com/teo-mateo/flbrowser/filelist"
 	"github.com/teo-mateo/flbrowser/filelist/rtorrent"
 	"log"
-	"encoding/base64"
 	"path"
 	"os"
 	"io/ioutil"
@@ -99,8 +98,6 @@ func downloadTorrent(w http.ResponseWriter, r *http.Request){
 
 	//log some info
 	fmt.Printf("torrent file %s, bytes: %d\n", filename, len(bytes))
-	base64torrent := base64.StdEncoding.EncodeToString(bytes)
-	fmt.Println(base64torrent)
 
 	var targetTorrentFile = path.Join(rtorrent.RActive, filename)
 	fmt.Printf("saving: %s\n", targetTorrentFile)
