@@ -6,6 +6,7 @@ import (
 	"github.com/teo-mateo/flbrowser/filelist/rtorrent"
 	"path/filepath"
 	"os"
+	"fmt"
 )
 
 var port int
@@ -31,6 +32,8 @@ func main() {
 	flag.StringVar(&rtorrent.RSession, "rsess", cwd, "--rsess=/path/to/session")
 	flag.Parse()
 	//ayy
+
+	fmt.Println("Start message")
 
 	server.Start(port, apikey)
 }
