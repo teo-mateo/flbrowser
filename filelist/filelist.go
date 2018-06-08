@@ -116,10 +116,6 @@ func DownloadTorrent(id int) (string, []byte, error) {
 	bytes, err := ioutil.ReadAll(response.Body)
 
 	return filename, bytes, nil
-
-
-
-	return "", nil, nil
 }
 
 // GetTorrents returns torrents

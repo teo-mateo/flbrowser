@@ -12,6 +12,9 @@ import (
 	"github.com/teo-mateo/flbrowser/filelist/rtorrent"
 	"log"
 	"encoding/base64"
+	"path"
+	"os"
+	"io/ioutil"
 )
 
 func httpError (err error, w http.ResponseWriter){
@@ -94,11 +97,23 @@ func downloadTorrent(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
+	//log some info
 	fmt.Printf("torrent file %s, bytes: %d\n", filename, len(bytes))
-
 	base64torrent := base64.StdEncoding.EncodeToString(bytes)
-
 	fmt.Println(base64torrent)
+
+	var targetTorrentFile = path.Join(rtorrent.RActive, filename)
+	fmt.Printf("saving: %s\n", targetTorrentFile)
+
+	if _, err := os.Stat(targetTorrentFile); os.IsNotExist(err){
+		err = ioutil.WriteFile(targetTorrentFile, bytes, 0644)
+		if err != nil{
+			httpError(err, w)
+			return
+		}
+	} else {
+		fmt.Println("...torrent exists")
+	}
 }
 
 func listFLTorrents(w http.ResponseWriter, r *http.Request){
