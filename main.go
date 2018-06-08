@@ -30,6 +30,7 @@ func main() {
 	flag.StringVar(&rtorrent.RDownloads, "rdown", cwd, "--rdown=/path/to/downloads")
 	flag.StringVar(&rtorrent.RSession, "rsess", cwd, "--rsess=/path/to/session")
 	flag.Parse()
+	//ayy
 
 	server.Start(port, apikey)
 }
