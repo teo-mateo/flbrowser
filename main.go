@@ -20,6 +20,8 @@ func main() {
 		panic(err)
 	}
 
+	//test
+
 	flag.IntVar(&port, "port", 8080, "-port=8080")
 	flag.StringVar(&apikey, "apikey", "abcdefgh", "--apikey=abcdefgh")
 	flag.StringVar(&rtorrent.Ru, "ru", "nouser", "--ru=username")
