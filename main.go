@@ -33,7 +33,7 @@ func main() {
 	flag.Parse()
 	//ayy
 
-	fmt.Println("Start message333")
+	fmt.Println("Start message3")
 
 	server.Start(port, apikey)
 }
