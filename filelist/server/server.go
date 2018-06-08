@@ -127,7 +127,7 @@ func listFLTorrents(w http.ResponseWriter, r *http.Request){
 	}
 
 	if !browse.IsCategory(category){
-		httpError(errors.New(fmt.Sprintf("%d is not a cat	egory", category)), w)
+		httpError(errors.New(fmt.Sprintf("%d is not a category", category)), w)
 		return
 	}
 
