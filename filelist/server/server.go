@@ -46,8 +46,6 @@ func Start(port int, key string){
 
 	router := mux.NewRouter()
 
-
-
 	router.HandleFunc("/torrents/fl/{category}/{page}", func(w http.ResponseWriter, r *http.Request) {
 		if checkKey(w, r){
 			listFLTorrents(w, r)
@@ -97,7 +95,7 @@ func downloadTorrent(w http.ResponseWriter, r *http.Request){
 	}
 
 	//log some info
-	fmt.Printf("torrent file %s, bytes: %d\n", filename, len(bytes))
+	fmt.Printf("Downloaded torrent file %s, bytes: %d\n", filename, len(bytes))
 
 	var targetTorrentFile = path.Join(rtorrent.RActive, filename)
 	fmt.Printf("saving: %s\n", targetTorrentFile)
