@@ -14,7 +14,7 @@ type FLTorrentInfo struct {
 
 type RTRTorrentInfo struct{
 	ID string `json:"id"`
-	Name string `json:"id"`
+	Name string `json:"name"`
 	CreationDate int `json:"id"`
 	IsOpen bool `json:"isopen"`
 	IsActive bool `json:"isactive"`
