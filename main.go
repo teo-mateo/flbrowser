@@ -6,6 +6,7 @@ import (
 	"github.com/teo-mateo/flbrowser/filelist/rtorrent"
 	"path/filepath"
 	"os"
+	"fmt"
 )
 
 var port int
@@ -28,6 +29,10 @@ func main() {
 	flag.StringVar(&rtorrent.RDownloads, "rdown", cwd, "--rdown=/path/to/downloads")
 	flag.StringVar(&rtorrent.RSession, "rsess", cwd, "--rsess=/path/to/session")
 	flag.Parse()
+
+	fmt.Printf("rActive:%s\n", rtorrent.RActive)
+	fmt.Printf("rDownloads:%s\n", rtorrent.RDownloads)
+	fmt.Printf("rSession:%s\n", rtorrent.RSession)
 
 	server.Start(port, apikey)
 }
