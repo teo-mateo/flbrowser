@@ -30,7 +30,7 @@ func main() {
 	flag.StringVar(&rtorrent.RSession, "rsess", cwd, "--rsess=/path/to/session")
 	flag.Parse()
 
-	fmt.Println("\nDirectories:")
+	fmt.Println("\nDirectories: ")
 	fmt.Printf("rActive:%s\n", rtorrent.RActive)
 	fmt.Printf("rDownloads:%s\n", rtorrent.RDownloads)
 	fmt.Printf("rSession:%s\n", rtorrent.RSession)
