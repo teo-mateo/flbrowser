@@ -98,7 +98,7 @@ func downloadTorrent(w http.ResponseWriter, r *http.Request){
 	fmt.Printf("Downloaded torrent file %s, bytes: %d\n", filename, len(bytes))
 
 	var targetTorrentFile = path.Join(rtorrent.RActive, filename)
-	fmt.Printf("Saving: %s\n", targetTorrentFile)
+	fmt.Printf("Saving torrent: %s\n", targetTorrentFile)
 
 	if _, err := os.Stat(targetTorrentFile); os.IsNotExist(err){
 		err = ioutil.WriteFile(targetTorrentFile, bytes, 0644)
