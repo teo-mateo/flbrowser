@@ -30,7 +30,7 @@ func getRTRInfo(dto *dto.RTRTorrentInfo) error {
 	var err error
 
 	//get name
-	dto.Name, err = RPC_id__string("d.name", dto.ID)
+		dto.Name, err = RPC_id__string("d.name", dto.ID)
 	if err != nil{
 		return err
 	}

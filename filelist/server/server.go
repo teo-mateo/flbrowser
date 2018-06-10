@@ -14,6 +14,7 @@ import (
 	"path"
 	"os"
 	"io/ioutil"
+	"sort"
 )
 
 func httpError (err error, w http.ResponseWriter){
@@ -46,6 +47,30 @@ func Start(port int, key string){
 
 	router := mux.NewRouter()
 
+	router.HandleFunc("/categories", func(w http.ResponseWriter, r *http.Request){
+
+		categories := make([]browse.Category, 0)
+		for _, v := range browse.Categories{
+			categories = append(categories, v)
+		}
+
+		//sort categories, order by ID
+		sort.Slice(categories, func(i int,j int) bool {
+			return categories[i].ID < categories[j].ID
+		})
+
+		bytes, err := json.MarshalIndent(categories, " ", " ")
+		if err != nil{
+			httpError(err, w)
+			return
+		}
+		_, err = w.Write(bytes)
+		if err != nil{
+			httpError(err, w)
+			return
+		}
+	}).Methods("GET")
+
 	router.HandleFunc("/torrents/fl/{category}/{page}", func(w http.ResponseWriter, r *http.Request) {
 		if checkKey(w, r){
 			listFLTorrents(w, r)
@@ -63,7 +88,7 @@ func Start(port int, key string){
 
 	router.HandleFunc("/torrents/rtr/{id}/{action}", func (w http.ResponseWriter, r *http.Request){
 		if checkKey(w, r){
-			log.Panic(errors.New("not implemented"))
+			doRTRAction(w, r)
 		}}).Methods("POST")
 
 	fmt.Printf("Listening @ 127.0.0.1:%d\n", port)
@@ -78,6 +103,57 @@ func Start(port int, key string){
 	})
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), router))
 
+}
+
+func doRTRAction(w http.ResponseWriter, r *http.Request){
+	vars := mux.Vars(r)
+	id := vars["id"]
+	if id == ""{
+		httpError(errors.New("missing rtr id"), w)
+		return
+	}
+
+	action := vars["action"]
+	if action == ""{
+		httpError(errors.New("mission rtr action"), w)
+		return
+	}
+
+	rtrFunction := ""
+	switch action {
+	case "close":
+		rtrFunction = "d.close"
+		break
+	case "open":
+		rtrFunction = "d.open"
+		break
+	case "resume":
+		rtrFunction = "d.resume"
+		break
+	case "pause":
+		rtrFunction = "d.pause"
+		break
+	case "start":
+		rtrFunction = "d.start"
+		break
+	case "stop":
+		rtrFunction = "d.stop"
+		break
+	case "erase":
+		rtrFunction = "d.erase"
+		break
+	default:
+		httpError(errors.New("unknown action"), w)
+		return
+	}
+
+	if rtrFunction != ""{
+		_, err := rtorrent.RPC_id__bool(rtrFunction, id)
+		if err != nil{
+			httpError(err, w)
+			return
+		}
+	}
 }
 
 func downloadTorrent(w http.ResponseWriter, r *http.Request){
