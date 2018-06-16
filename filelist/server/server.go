@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/mux"
 	"fmt"
 	"github.com/teo-mateo/flbrowser/filelist/browse"
-	"sort"
 	"github.com/gorilla/handlers"
 	"log"
 	"github.com/teo-mateo/flbrowser/filelist/rtorrent"
@@ -16,6 +15,8 @@ import (
 	"os"
 	"io/ioutil"
 	"encoding/json"
+	"sort"
+	"time"
 )
 
 func httpError (err error, w http.ResponseWriter){
@@ -71,34 +72,62 @@ func Start(port int, key string, username string, pwd string){
 
 	}).Methods("GET")
 
-	router.HandleFunc("/categories", secure(func(w http.ResponseWriter, r *http.Request){
-
-		categories := make([]browse.Category, 0)
-		for _, v := range browse.Categories{
-			categories = append(categories, v)
-		}
-
-		//sort categories, order by ID
-		sort.Slice(categories, func(i int,j int) bool {
-			return categories[i].ID < categories[j].ID
-		})
-
-		bytes, err := json.MarshalIndent(categories, " ", " ")
+	router.HandleFunc("/login2", func(w http.ResponseWriter, r *http.Request){
+		defer r.Body.Close()
+		b, err := ioutil.ReadAll(r.Body)
 		if err != nil{
 			httpError(err, w)
 			return
 		}
-		_, err = w.Write(bytes)
-		if err != nil{
-			httpError(err, w)
+		var login map[string]string
+		json.Unmarshal(b, &login)
+
+		var u, p string
+		var ok bool
+		if u, ok = login["username"]; !ok{
+			httpError(errors.New("username is mandatory"), w)
 			return
 		}
-	})).Methods("GET")
+		if p, ok = login["password"]; !ok{
+			httpError(errors.New("password is mandatory"), w)
+			return
+		}
 
+		if u == username && p == pwd {
+			//generate access token
+			at, expires, err := generateAccessToken()
+			if err != nil{
+				httpError(err, w)
+				return
+			}
+			//generate ad-hoc struct to send back access token
+			response := struct{
+				AccessToken string `json:"accessToken"`
+				Expires time.Time `json:"expires"`
+			} {
+				at, expires,
+			}
+
+			//marshal and reply with the access token
+			b, err := json.Marshal(response)
+			w.Write(b)
+			return
+		} else {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+	}).Methods("POST")
+
+	router.HandleFunc("/ping",secure(ping)).Methods("GET")
+	router.HandleFunc("/categories", getFLCategories).Methods("GET")
 	router.HandleFunc("/torrents/fl/{category}/{page}", secure(listFLTorrents)).Methods("GET")
 	router.HandleFunc("/torrents/rtr", secure(listRTRTorrents)).Methods("GET")
 	router.HandleFunc("/torrents/fl/{id}/download", secure(downloadTorrent)).Methods("POST")
 	router.HandleFunc("/torrents/rtr/{id}/{action}", secure(doRTRAction)).Methods("POST")
+
+	//serve static files
+	router.PathPrefix("/app").Handler(http.FileServer(http.Dir("../client/dist")))
 
 	fmt.Printf("Listening @ 127.0.0.1:%d\n", port)
 	fmt.Println("Routes:")
@@ -112,9 +141,19 @@ func Start(port int, key string, username string, pwd string){
 	})
 
 	//allow CORS
-	corsObj:=handlers.AllowedOrigins([]string{"*"})
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), handlers.CORS(corsObj)(router)))
 
+	opts := []handlers.CORSOption {
+
+		handlers.AllowedOrigins([]string{"*"}),
+		handlers.AllowedMethods([]string{"GET", "PUT", "POST", "OPTIONS"}),
+		handlers.AllowedHeaders([]string{"Content-Type", "X-Requested-With"}),
+	}
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), handlers.CORS(opts...)(router)))
+
+}
+
+func ping (w http.ResponseWriter, r *http.Request){
+	w.Write([]byte("pong"))
 }
 
 func doRTRAction(w http.ResponseWriter, r *http.Request){
@@ -196,6 +235,29 @@ func downloadTorrent(w http.ResponseWriter, r *http.Request){
 		}
 	} else {
 		fmt.Println("...torrent exists")
+	}
+}
+
+func getFLCategories(w http.ResponseWriter, r *http.Request){
+	categories := make([]browse.Category, 0)
+	for _, v := range browse.Categories{
+		categories = append(categories, v)
+	}
+
+	//sort categories, order by ID
+	sort.Slice(categories, func(i int,j int) bool {
+		return categories[i].ID < categories[j].ID
+	})
+
+	bytes, err := json.MarshalIndent(categories, " ", " ")
+	if err != nil{
+		httpError(err, w)
+		return
+	}
+	_, err = w.Write(bytes)
+	if err != nil{
+		httpError(err, w)
+		return
 	}
 }
 

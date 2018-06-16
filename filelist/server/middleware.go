@@ -13,6 +13,7 @@ func secure (next http.HandlerFunc) http.HandlerFunc{
 		if checkAccessToken(h){
 			next(w,r)
 		} else {
+			fmt.Println("%d http.StatusUnauthorized", http.StatusUnauthorized)
 			w.WriteHeader(http.StatusUnauthorized)
 		}
 	}

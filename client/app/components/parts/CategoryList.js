@@ -15,7 +15,7 @@ class CategoryList extends React.Component{
             console.log(result);
             this.setState({
                 categories: result.data
-            })
+            });
         })
         .catch((error)=>{
             console.log(error)

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"os"
 	"fmt"
+	"log"
 )
 
 var port int
@@ -41,7 +42,11 @@ func main() {
 	fmt.Printf("rActive:%s\n", rtorrent.RActive)
 	fmt.Printf("rDownloads:%s\n", rtorrent.RDownloads)
 	fmt.Printf("rSession:%s\n", rtorrent.RSession)
-
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("current dir:%s\n", dir)
 
 	server.Start(port, apikey, httpUser, httpPwd)
 }
