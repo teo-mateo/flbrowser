@@ -11,6 +11,8 @@ import (
 
 var port int
 var apikey string
+var httpUser string
+var httpPwd string
 var ru string
 var rp string
 
@@ -23,6 +25,8 @@ func main() {
 
 	flag.IntVar(&port, "port", 8080, "-port=8080")
 	flag.StringVar(&apikey, "apikey", "abcdefgh", "--apikey=abcdefgh")
+	flag.StringVar(&httpUser, "httpu", "", "--httpu=username")
+	flag.StringVar(&httpPwd, "httpp", "", "--httpp=password")
 	flag.StringVar(&rtorrent.Ru, "ru", "nouser", "--ru=username")
 	flag.StringVar(&rtorrent.Rp, "rp", "nopwd", "--rp=password")
 	flag.StringVar(&rtorrent.RActive, "ractive", cwd, "--ractive=/path/to/.torrent/files")
@@ -30,10 +34,14 @@ func main() {
 	flag.StringVar(&rtorrent.RSession, "rsess", cwd, "--rsess=/path/to/session")
 	flag.Parse()
 
+	fmt.Println()
+	fmt.Printf("HTTP Basic Auth Username: %s\n", httpUser)
+	fmt.Printf("HTTP Basic Auth Password: %s\n", httpPwd)
 	fmt.Println("\nDirectories: ")
 	fmt.Printf("rActive:%s\n", rtorrent.RActive)
 	fmt.Printf("rDownloads:%s\n", rtorrent.RDownloads)
 	fmt.Printf("rSession:%s\n", rtorrent.RSession)
 
-	server.Start(port, apikey)
+
+	server.Start(port, apikey, httpUser, httpPwd)
 }

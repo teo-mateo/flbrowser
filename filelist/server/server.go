@@ -2,19 +2,20 @@ package server
 
 import (
 	"net/http"
-	"github.com/gorilla/mux"
 	"errors"
+	"github.com/gorilla/mux"
 	"fmt"
-	"strconv"
-	"encoding/json"
 	"github.com/teo-mateo/flbrowser/filelist/browse"
-	"github.com/teo-mateo/flbrowser/filelist"
-	"github.com/teo-mateo/flbrowser/filelist/rtorrent"
+	"sort"
+	"github.com/gorilla/handlers"
 	"log"
+	"github.com/teo-mateo/flbrowser/filelist/rtorrent"
+	"strconv"
+	"github.com/teo-mateo/flbrowser/filelist"
 	"path"
 	"os"
 	"io/ioutil"
-	"sort"
+	"encoding/json"
 )
 
 func httpError (err error, w http.ResponseWriter){
@@ -25,6 +26,7 @@ func httpError (err error, w http.ResponseWriter){
 //do not set here
 var apiKey string = ""
 
+/*
 func checkKey(w http.ResponseWriter, r *http.Request) bool {
 	if apiKey == ""{
 		w.WriteHeader(http.StatusUnauthorized)
@@ -37,8 +39,9 @@ func checkKey(w http.ResponseWriter, r *http.Request) bool {
 		return true
 	}
 }
+*/
 
-func Start(port int, key string){
+func Start(port int, key string, username string, pwd string){
 
 	apiKey = key
 	if apiKey == ""{
@@ -47,7 +50,28 @@ func Start(port int, key string){
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/categories", func(w http.ResponseWriter, r *http.Request){
+	router.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request){
+
+		if checkAccessToken(r.Header.Get(ATHeader)){
+			//redirect to /
+			w.WriteHeader(http.StatusMovedPermanently)
+			w.Header().Set("Location", "/")
+		} else {
+			err := doBasicAuth(w, r, username, pwd)
+			if err != nil {
+				fmt.Println(err.Error())
+				w.Header().Set("WWW-Authenticate", "Basic")
+				w.WriteHeader(http.StatusUnauthorized)
+			} else {
+				//redirect to /
+				w.WriteHeader(http.StatusMovedPermanently)
+				w.Header().Set("Location", "/")
+			}
+		}
+
+	}).Methods("GET")
+
+	router.HandleFunc("/categories", secure(func(w http.ResponseWriter, r *http.Request){
 
 		categories := make([]browse.Category, 0)
 		for _, v := range browse.Categories{
@@ -69,27 +93,12 @@ func Start(port int, key string){
 			httpError(err, w)
 			return
 		}
-	}).Methods("GET")
+	})).Methods("GET")
 
-	router.HandleFunc("/torrents/fl/{category}/{page}", func(w http.ResponseWriter, r *http.Request) {
-		if checkKey(w, r){
-			listFLTorrents(w, r)
-		}}).Methods("GET")
-
-	router.HandleFunc("/torrents/rtr", func (w http.ResponseWriter, r *http.Request){
-		if checkKey(w, r) {
-			listRTRTorrents(w, r)
-		}}).Methods("GET")
-
-	router.HandleFunc("/torrents/fl/{id}/download", func (w http.ResponseWriter, r *http.Request){
-		if checkKey(w, r){
-			downloadTorrent(w, r)
-		}}).Methods("POST")
-
-	router.HandleFunc("/torrents/rtr/{id}/{action}", func (w http.ResponseWriter, r *http.Request){
-		if checkKey(w, r){
-			doRTRAction(w, r)
-		}}).Methods("POST")
+	router.HandleFunc("/torrents/fl/{category}/{page}", secure(listFLTorrents)).Methods("GET")
+	router.HandleFunc("/torrents/rtr", secure(listRTRTorrents)).Methods("GET")
+	router.HandleFunc("/torrents/fl/{id}/download", secure(downloadTorrent)).Methods("POST")
+	router.HandleFunc("/torrents/rtr/{id}/{action}", secure(doRTRAction)).Methods("POST")
 
 	fmt.Printf("Listening @ 127.0.0.1:%d\n", port)
 	fmt.Println("Routes:")
@@ -101,7 +110,10 @@ func Start(port int, key string){
 		fmt.Printf("  %s\n", path)
 		return nil
 	})
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), router))
+
+	//allow CORS
+	corsObj:=handlers.AllowedOrigins([]string{"*"})
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), handlers.CORS(corsObj)(router)))
 
 }
 
