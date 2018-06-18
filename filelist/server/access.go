@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"sync"
 )
 
 var accessTokens = make(map[string]time.Time)
@@ -24,7 +25,17 @@ func generateAccessToken() (string, time.Time, error) {
 	return accessToken, expires, nil
 }
 
+var lastCheck time.Time
+var mutex = &sync.Mutex{}
+
 func checkAccessToken(at string) bool {
+
+	mutex.Lock()
+	if time.Now().Sub(lastCheck) < 500* time.Millisecond{
+		time.Sleep(300*time.Millisecond)
+	}
+	lastCheck = time.Now()
+	mutex.Unlock()
 
 	//debug
 	if at == "youshallnotpass"{
@@ -35,7 +46,7 @@ func checkAccessToken(at string) bool {
 	if expires.IsZero(){
 		return false
 	}
-	if expires.After(time.Now()){
+	if time.Now().After(expires){
 		return false
 	}
 	return true

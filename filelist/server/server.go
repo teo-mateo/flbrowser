@@ -120,14 +120,15 @@ func Start(port int, key string, username string, pwd string){
 	}).Methods("POST")
 
 	router.HandleFunc("/ping",secure(ping)).Methods("GET")
-	router.HandleFunc("/categories", getFLCategories).Methods("GET")
+	router.HandleFunc("/categories", secure(getFLCategories)).Methods("GET", "OPTIONS")
 	router.HandleFunc("/torrents/fl/{category}/{page}", secure(listFLTorrents)).Methods("GET")
 	router.HandleFunc("/torrents/rtr", secure(listRTRTorrents)).Methods("GET")
 	router.HandleFunc("/torrents/fl/{id}/download", secure(downloadTorrent)).Methods("POST")
 	router.HandleFunc("/torrents/rtr/{id}/{action}", secure(doRTRAction)).Methods("POST")
 
+
 	//serve static files
-	router.PathPrefix("/app").Handler(http.FileServer(http.Dir("../client/dist")))
+	router.PathPrefix("/app/").Handler(http.StripPrefix("/app/", http.FileServer(http.Dir("../client/dist/"))))
 
 	fmt.Printf("Listening @ 127.0.0.1:%d\n", port)
 	fmt.Println("Routes:")
@@ -146,7 +147,7 @@ func Start(port int, key string, username string, pwd string){
 
 		handlers.AllowedOrigins([]string{"*"}),
 		handlers.AllowedMethods([]string{"GET", "PUT", "POST", "OPTIONS"}),
-		handlers.AllowedHeaders([]string{"Content-Type", "X-Requested-With"}),
+		handlers.AllowedHeaders([]string{"Content-Type", "X-Requested-With", "FLAccessToken"}),
 	}
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), handlers.CORS(opts...)(router)))
 

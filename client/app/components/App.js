@@ -1,6 +1,6 @@
 import React from 'react';
 
-import {BrowserRouter as Router, Link, Route, Switch} from 'react-router-dom'
+import {BrowserRouter, Link, Route, Switch} from 'react-router-dom'
 import FlbrowserNav from './nav/FlbrowserNav'
 import WebAPI from '../util/WebAPI'
 import RTorrentList from './parts/RTorrentList'
@@ -8,7 +8,7 @@ import CookieUtil from '../util/CookieUtil'
 import BrowseFL from "./parts/BrowseFL"
 import Login from "./parts/Login"
 
-let browserHistory = Router.browserHistory;
+let browserHistory = BrowserRouter.history;
 
 
 class App extends React.Component{
@@ -20,10 +20,31 @@ class App extends React.Component{
         this.renderActive = this.renderActive.bind(this);
         this.renderHome = this.renderHome.bind(this);
 
-        var at = CookieUtil.GetAccessTokenFromCookie();
         this.state = {
-            loggedIn:  (at !== undefined)
+            loggedIn: false,
+            category: 1, 
+            page: 0
+        };
+    }
+
+    componentDidMount(){
+        var at = CookieUtil.GetAccessTokenFromCookie();
+
+        if (at !== undefined){
+            WebAPI.ping()
+                .then( (response) => {
+                    console.log("ping ok");
+                    this.setState({ loggedIn: true });
+                })
+                .catch ( (error) => {
+                    console.log("ping nok");
+                    this.setState({ loggedIn: false });
+                });
         }
+
+        this.setState({
+            loggedIn:  (at !== undefined)
+        });
     }
 
     handleLogin(){
@@ -39,10 +60,20 @@ class App extends React.Component{
         });
     }
 
-    renderHome(){
+    renderHome(params_){
+
+        let category=1;
+        let page=0;
+        if (params_.match.params.category && params_.match.params.page){
+            category = params_.match.params.category;
+            page = params_.match.params.page;
+        }
+
         let content = ""
         if (this.state.loggedIn){
-            content = (<BrowseFL category={1} page={1} />)
+            content = (<BrowseFL 
+                category={category} 
+                page={page} />)
         } else {
             content = (<Login onLogin={this.handleLogin} />)
         }
@@ -53,7 +84,6 @@ class App extends React.Component{
 				<p>FLBrowser client 2</p>
                 {content}
             </div>
-
         )
     }
 
@@ -70,7 +100,7 @@ class App extends React.Component{
     render(){
         return (
             <div>
-                <Router history={browserHistory}>
+                <BrowserRouter>
                     <Switch>
                         <Route path='/' exact render={this.renderHome} />
                         <Route path='/home' render={this.renderHome} />
@@ -78,14 +108,16 @@ class App extends React.Component{
                             return (
                                 <div>
                                     <FlbrowserNav isLoggedIn={this.state.isLoggedIn}/>
-                                    <p>FLBrowser client 2</p>
-                                    <BrowseFL category={1} page={1}/>
+                                    <p>FLBrowser client - browse</p>
+                                    <BrowseFL   category={params.match.params.category} 
+                                                page={params.match.params.page}
+                                                />
                                 </div>                                
                             )
                         }} />
                         <Route path='/active' render={this.renderActive} />
                     </Switch>
-                </Router>
+                </BrowserRouter>
             </div>
         )
     }

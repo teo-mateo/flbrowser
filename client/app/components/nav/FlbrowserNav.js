@@ -9,7 +9,7 @@ class FlbrowserNav extends React.Component{
     }
 
     handleLogoutClick(){
-        this.props.onLogout();
+        this.props.onLogout();  
     }
 
     render(){

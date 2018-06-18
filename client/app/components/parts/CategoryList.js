@@ -1,6 +1,9 @@
 import React from 'react'
+//import { withRouter } from 'react-router-dom'
 import CategoryLink from './CategoryLink'
 import WebAPI from '../../util/WebAPI'
+import { Button, ButtonGroup } from 'reactstrap';
+import { withRouter } from 'react-router';
 
 class CategoryList extends React.Component{
 
@@ -24,14 +27,17 @@ class CategoryList extends React.Component{
 
     render(){
         return (
-            <div>
-                {
-                    this.state.categories.map((v,i)=><span key={v.id}><CategoryLink category={v} /> &nbsp;&nbsp;</span>   )
-                }
-            </div>
+            <ButtonGroup>
+                {this.state.categories.map((v,i)=>(
+                        <Button key={v.id} 
+                            onClick={(event) =>{
+                                this.props.history.push( '/browse/'+v.id + '/1')
+                        }}>{v.name}</Button>
+                    ))}
+            </ButtonGroup>
         )
     }
 }
 
 
-module.exports = CategoryList
+module.exports = withRouter(CategoryList)
