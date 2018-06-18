@@ -123,7 +123,7 @@ func Start(port int, key string, username string, pwd string){
 	router.HandleFunc("/categories", secure(getFLCategories)).Methods("GET", "OPTIONS")
 	router.HandleFunc("/torrents/fl/{category}/{page}", secure(listFLTorrents)).Methods("GET")
 	router.HandleFunc("/torrents/rtr", secure(listRTRTorrents)).Methods("GET")
-	router.HandleFunc("/torrents/fl/{id}/download", secure(downloadTorrent)).Methods("POST")
+	router.HandleFunc("/torrents/fl/{id}/download", downloadTorrent).Methods("POST")
 	router.HandleFunc("/torrents/rtr/{id}/{action}", secure(doRTRAction)).Methods("POST")
 
 
