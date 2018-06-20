@@ -110,7 +110,7 @@ class App extends React.Component{
     render(){
         let basename = this.getBasename();
         return (
-            <div>
+            <div>   
                 <BrowserRouter basename={basename}>
                     <Switch>
                         <Route path='/' exact render={this.renderHome} />
