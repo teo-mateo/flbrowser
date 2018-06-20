@@ -6,7 +6,7 @@ var api = function(url){
     if (window.location.hostname.startsWith("127.0.0.1") || window.location.hostname.startsWith("localhost")){
         return "http://localhost:8888" + url;
     } else {
-        return window.location.origin + "/flbrowser/app" + url;
+        return window.location.origin + "/flbrowser" + url;
     }
 
     return ApiRoot + url
