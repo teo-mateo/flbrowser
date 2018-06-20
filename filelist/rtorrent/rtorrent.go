@@ -12,12 +12,13 @@ import (
 
 var Ru string
 var Rp string
+var Raddress string
 var RActive string
 var RSession string
 var RDownloads string
 
 func Url() string {
-	return fmt.Sprintf("http://%s:%s@h.bardici.ro:8008/RPC2", Ru, Rp)
+	return fmt.Sprintf("http://"+"%s:%s@%s" + Ru, Rp, Raddress)
 }
 
 func CallAndUnmarshal2(method string, id string) (*CmethodResponse, error){

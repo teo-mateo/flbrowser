@@ -3,7 +3,7 @@ import React from 'react';
 import {BrowserRouter, Link, Route, Switch} from 'react-router-dom'
 import FlbrowserNav from './nav/FlbrowserNav'
 import WebAPI from '../util/WebAPI'
-import RTorrentList from './parts/RTorrentList'
+import BrowseRTR from './parts/BrowseRTR'
 import CookieUtil from '../util/CookieUtil'
 import BrowseFL from "./parts/BrowseFL"
 import Login from "./parts/Login"
@@ -102,7 +102,7 @@ class App extends React.Component{
             <div>
                 <FlbrowserNav isLoggedIn={this.state.loggedIn}/>
                 <p>FLBrowser client - RTorrent</p>
-                <RTorrentList />
+                <BrowseRTR />
             </div>
         )
     }

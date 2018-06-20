@@ -36,6 +36,7 @@ func main() {
 	flag.StringVar(&rtorrent.RActive, "ractive", cwd, "--ractive=/path/to/.torrent/files")
 	flag.StringVar(&rtorrent.RDownloads, "rdown", cwd, "--rdown=/path/to/downloads")
 	flag.StringVar(&rtorrent.RSession, "rsess", cwd, "--rsess=/path/to/session")
+	flag.StringVar(&rtorrent.Raddress, "raddr", "h.bardici.ro:8008/RPC2", "--raddrr=server:port/RPC2")
 	flag.Parse()
 
 	fmt.Println()
@@ -45,6 +46,7 @@ func main() {
 	fmt.Printf("rActive:%s\n", rtorrent.RActive)
 	fmt.Printf("rDownloads:%s\n", rtorrent.RDownloads)
 	fmt.Printf("rSession:%s\n", rtorrent.RSession)
+	fmt.Printf("RTR server:%s\n", rtorrent.Raddress)
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
 		log.Fatal(err)

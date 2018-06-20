@@ -12,19 +12,24 @@ class BrowseFL extends React.Component{
             rtorrents: []
         }
 
+        this.loadTorrents = this.loadTorrents.bind(this);
         this.loadFLTorrents = this.loadFLTorrents.bind(this);
-
+        this.loadRTRTorrents = this.loadRTRTorrents.bind(this);
     }
+
+
 
     componentDidMount(){
-        this.loadFLTorrents();
+        this.loadTorrents();
     }
 
-    componentDidUpdate(){
-        //this.loadFLTorrents();
-    }
     componentWillReceiveProps(){
+        this.loadTorrents();
+    }
+
+    loadTorrents(){
         this.loadFLTorrents();
+        this.loadRTRTorrents();
     }
 
     loadFLTorrents(){
@@ -39,6 +44,19 @@ class BrowseFL extends React.Component{
                 console.log('--getFlTorrents.error--');
                 console.log(error);
             });
+    }
+
+    loadRTRTorrents(){
+        WebAPI.getRtrTorrents()
+            .then((response) =>{
+                console.log('--getRtrTorrents.then--');
+                console.log(response);
+                this.setState({rtorrents:response.data});
+            })
+            .catch((error) => {
+                console.log('--getRtrTorrents.error--');
+                console.log(error);
+            })
     }
 
     render(){

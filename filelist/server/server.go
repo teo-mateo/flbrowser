@@ -20,6 +20,7 @@ import (
 )
 
 func httpError (err error, w http.ResponseWriter){
+	fmt.Println(err.Error())
 	w.WriteHeader(http.StatusInternalServerError)
 	w.Write([]byte(err.Error()))
 }
