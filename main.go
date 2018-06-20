@@ -1,13 +1,14 @@
 package main
 
 import (
+	"github.com/teo-mateo/flbrowser/filelist/rtorrent"
 	"github.com/teo-mateo/flbrowser/filelist/server"
 	"flag"
-	"github.com/teo-mateo/flbrowser/filelist/rtorrent"
 	"path/filepath"
 	"os"
 	"fmt"
 	"log"
+
 )
 
 var port int
@@ -53,6 +54,16 @@ func main() {
 	}
 	fmt.Printf("current dir: %s\n", dir)
 	fmt.Printf("client dir: %s\n", clientDir)
+
+	filepath.Walk(clientDir, func(path string, info os.FileInfo, err error) (error){
+		if err == nil{
+			fmt.Printf("...%s\n",path)
+		} else {
+			fmt.Printf(err.Error())
+		}
+
+		return nil
+	})
 
 	server.Start(port, apikey, httpUser, httpPwd, clientDir)
 
