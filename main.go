@@ -16,6 +16,8 @@ var httpUser string
 var httpPwd string
 var ru string
 var rp string
+var clientDir string
+
 
 func main() {
 
@@ -28,6 +30,7 @@ func main() {
 	flag.StringVar(&apikey, "apikey", "abcdefgh", "--apikey=abcdefgh")
 	flag.StringVar(&httpUser, "httpu", "", "--httpu=username")
 	flag.StringVar(&httpPwd, "httpp", "", "--httpp=password")
+	flag.StringVar(&clientDir, "clientdir", filepath.Join(cwd, "../client/dist"), "--clientdir=/path/to/client")
 	flag.StringVar(&rtorrent.Ru, "ru", "nouser", "--ru=username")
 	flag.StringVar(&rtorrent.Rp, "rp", "nopwd", "--rp=password")
 	flag.StringVar(&rtorrent.RActive, "ractive", cwd, "--ractive=/path/to/.torrent/files")
@@ -46,7 +49,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("current dir:%s\n", dir)
+	fmt.Printf("current dir: %s\n", dir)
+	fmt.Printf("client dir: %s\n", clientDir)
 
-	server.Start(port, apikey, httpUser, httpPwd)
+	server.Start(port, apikey, httpUser, httpPwd, clientDir)
+
+
 }

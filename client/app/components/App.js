@@ -100,7 +100,7 @@ class App extends React.Component{
     render(){
         return (
             <div>
-                <BrowserRouter>
+                <BrowserRouter basename="/app">
                     <Switch>
                         <Route path='/' exact render={this.renderHome} />
                         <Route path='/home' render={this.renderHome} />

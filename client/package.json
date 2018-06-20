@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "webpack-dev-server --port 8081 --open",
-    "create": "webpack --progress"
+    "create": "webpack --progress && npm run copy",
+    "copy": "copyfiles \"css/*\" \"dist/\""
   },
   "author": "teo",
   "license": "ISC",
@@ -34,6 +35,7 @@
     "babel-loader": "^7.1.1",
     "babel-preset-env": "^1.6.0",
     "babel-preset-react": "^6.24.1",
+    "copyfiles": "^2.0.0",
     "css-loader": "^0.28.4",
     "html-webpack-plugin": "^2.29.0",
     "style-loader": "^0.18.2",

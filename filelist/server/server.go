@@ -42,7 +42,7 @@ func checkKey(w http.ResponseWriter, r *http.Request) bool {
 }
 */
 
-func Start(port int, key string, username string, pwd string){
+func Start(port int, key string, username string, pwd string, clientDir string){
 
 	apiKey = key
 	if apiKey == ""{
@@ -128,7 +128,7 @@ func Start(port int, key string, username string, pwd string){
 
 
 	//serve static files
-	router.PathPrefix("/app/").Handler(http.StripPrefix("/app/", http.FileServer(http.Dir("../client/dist/"))))
+	router.PathPrefix("/app/").Handler(http.StripPrefix("/app/", http.FileServer(http.Dir(clientDir))))
 
 	fmt.Printf("Listening @ 127.0.0.1:%d\n", port)
 	fmt.Println("Routes:")
