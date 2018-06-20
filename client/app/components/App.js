@@ -118,7 +118,7 @@ class App extends React.Component{
                         <Route path='/browse/:category/:page' render={(params)=>{
                             return (
                                 <div>
-                                    <FlbrowserNav isLoggedIn={this.state.isLoggedIn}/>
+                                    <FlbrowserNav isLoggedIn={this.state.loggedIn}/>
                                     <p>FLBrowser client - browse</p>
                                     <BrowseFL   category={params.match.params.category} 
                                                 page={params.match.params.page}
