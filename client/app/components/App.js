@@ -10,7 +10,6 @@ import Login from "./parts/Login"
 
 let browserHistory = BrowserRouter.history;
 
-
 class App extends React.Component{
     constructor(){
         super();
@@ -19,12 +18,23 @@ class App extends React.Component{
         this.handleLogout = this.handleLogout.bind(this);
         this.renderActive = this.renderActive.bind(this);
         this.renderHome = this.renderHome.bind(this);
+        this.getBasename = this.getBasename.bind(this);
 
         this.state = {
             loggedIn: false,
             category: 1, 
             page: 0
         };
+    }
+
+    getBasename(){
+        if (window.location.host == "localhost:8081"){ //served locally with webpack
+            return "";
+        } else if (window.location.host == "localhost:8888"){ //served locally from go backend 
+            return "/app";
+        } else { //served remote
+            return "/flbrowser/app";
+        } 
     }
 
     componentDidMount(){
@@ -98,9 +108,10 @@ class App extends React.Component{
     }
 
     render(){
+        let basename = this.getBasename();
         return (
             <div>
-                <BrowserRouter basename="/flbrowser/app">
+                <BrowserRouter basename={basename}>
                     <Switch>
                         <Route path='/' exact render={this.renderHome} />
                         <Route path='/home' render={this.renderHome} />

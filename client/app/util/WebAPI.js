@@ -1,8 +1,14 @@
 import Axios from 'axios'
 import CookieUtil from './CookieUtil'
 
-var ApiRoot = "http://localhost:8888";
 var api = function(url){
+
+    if (window.location.hostname.startsWith("127.0.0.1") || window.location.hostname.startsWith("localhost")){
+        return "http://localhost:8888" + url;
+    } else {
+        return window.location.origin + "/flbrowser/app/" + url;
+    }
+
     return ApiRoot + url
 }
 
