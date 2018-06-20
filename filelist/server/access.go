@@ -31,8 +31,8 @@ var mutex = &sync.Mutex{}
 func checkAccessToken(at string) bool {
 
 	mutex.Lock()
-	if time.Now().Sub(lastCheck) < 500* time.Millisecond{
-		time.Sleep(300*time.Millisecond)
+	if time.Now().Sub(lastCheck) < 200* time.Millisecond{
+		time.Sleep(200*time.Millisecond)
 	}
 	lastCheck = time.Now()
 	mutex.Unlock()

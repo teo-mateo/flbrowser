@@ -18,7 +18,7 @@ var RSession string
 var RDownloads string
 
 func Url() string {
-	return fmt.Sprintf("http://"+"%s:%s@%s" + Ru, Rp, Raddress)
+	return fmt.Sprintf("http://%s:%s@%s", Ru, Rp, Raddress)
 }
 
 func CallAndUnmarshal2(method string, id string) (*CmethodResponse, error){
