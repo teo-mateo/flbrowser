@@ -122,6 +122,7 @@ func Start(port int, key string, username string, pwd string, clientDir string){
 
 	router.HandleFunc("/ping",secure(ping)).Methods("GET")
 	router.HandleFunc("/categories", secure(getFLCategories)).Methods("GET", "OPTIONS")
+	router.HandleFunc("/torrents/fl/search/{searchTerm}/{category}/{page}", secure(search)).Methods(("GET"))
 	router.HandleFunc("/torrents/fl/{category}/{page}", secure(listFLTorrents)).Methods("GET")
 	router.HandleFunc("/torrents/rtr", secure(listRTRTorrents)).Methods("GET")
 	router.HandleFunc("/torrents/fl/{id}/download", downloadTorrent).Methods("POST")
@@ -152,6 +153,39 @@ func Start(port int, key string, username string, pwd string, clientDir string){
 	}
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), handlers.CORS(opts...)(router)))
 
+}
+
+func search(w http.ResponseWriter, r *http.Request){
+	vars := mux.Vars(r)
+	searchTerm:= vars["searchTerm"]
+	category, err := strconv.Atoi(vars["category"])
+	if err != nil{
+		httpError(err, w)
+		return
+	}
+	page, err := strconv.Atoi(vars["page"])
+	if err != nil{
+		httpError(err, w)
+		return
+	}
+	if !browse.IsCategory(category){
+		httpError(errors.New(fmt.Sprintf("%d is not a category", category)), w)
+		return
+	}
+
+	torrents, err := filelist.GetTorrents(searchTerm, category, page)
+	if err != nil {
+		httpError(err, w)
+		return
+	}
+
+	bytes, err := json.MarshalIndent(torrents, "", "  ")
+	if err != nil {
+		httpError(err, w)
+		return
+	}
+
+	w.Write(bytes)
 }
 
 func ping (w http.ResponseWriter, r *http.Request){
@@ -281,7 +315,7 @@ func listFLTorrents(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	torrents, err := filelist.GetTorrents(category, page)
+	torrents, err := filelist.GetTorrents("", category, page)
 	if err != nil {
 		httpError(err, w)
 		return

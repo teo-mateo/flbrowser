@@ -119,7 +119,7 @@ func DownloadTorrent(id int) (string, []byte, error) {
 }
 
 // GetTorrents returns torrents
-func GetTorrents(category int, page int) ([]dto.FLTorrentInfo, error) {
+func GetTorrents(searchTerm string,category int, page int) ([]dto.FLTorrentInfo, error) {
 
 	err := login()
 	if err != nil{
@@ -127,7 +127,7 @@ func GetTorrents(category int, page int) ([]dto.FLTorrentInfo, error) {
 	}
 
 	q := flurlBrowse.Query()
-	q.Add("search", "")
+	q.Add("search", searchTerm)
 	q.Add("cat", strconv.Itoa(category))
 	q.Add("searchin", "1")
 	q.Add("sort", "2")
@@ -180,8 +180,6 @@ func GetTorrents(category int, page int) ([]dto.FLTorrentInfo, error) {
 			html, err = s.Html()
 			if err != nil{
 				fmt.Printf("%d --> %s\n", i, err.Error())
-			} else {
-				fmt.Printf("%d --> %s\n", i, html)
 			}
 
 			switch i {

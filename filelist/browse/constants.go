@@ -6,6 +6,8 @@ const (
 	CAT_MOV_HD    = 4
 	CAT_SERIES_SD = 23
 	CAT_XXX       = 7
+	CAT_AUDIO	  = 11
+	CAT_DOCS      =16
 )
 
 var Categories = map[string]Category{
@@ -14,7 +16,8 @@ var Categories = map[string]Category{
 	"CAT_MOV_HD": {4, "Movies - HD"},
 	"CAT_SERIES_SD": {23, "Series - SD"},
 	"CAT_XXX": {7, "XXX"},
-
+	"CAT_AUDIO": {11, "Audio"},
+	"CAT_DOCS": {16, "Docs"},
 }
 
 type Category struct {
