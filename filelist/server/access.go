@@ -25,6 +25,10 @@ func generateAccessToken() (string, time.Time, error) {
 	return accessToken, expires, nil
 }
 
+func deleteAccessToken(token string){
+	delete(accessTokens, token)
+}
+
 var lastCheck time.Time
 var mutex = &sync.Mutex{}
 

@@ -3,11 +3,11 @@ package rtorrent
 import (
 	"fmt"
 	"encoding/xml"
-	"log"
 	"net/http"
 	"errors"
 	"io/ioutil"
 	"bytes"
+	"log"
 )
 
 var Ru string
@@ -47,12 +47,13 @@ func Call(input MethodCall) ([]byte, error){
 		return nil, err
 	}
 
-	log.Println(string(inputBytes))
+	log.Println("RPC "+input.MethodName)
+	//log.Println(string(inputBytes))
 
 	buf := bytes.NewBuffer(inputBytes)
 
 	client := http.Client{}
-	log.Println("POST " + Url())
+	//log.Println("POST " + Url())
 	req, err := http.NewRequest("POST", Url(), buf)
 	if err != nil{
 		return nil, err
@@ -73,7 +74,7 @@ func Call(input MethodCall) ([]byte, error){
 		return nil, err
 	}
 
-	log.Println(string(bytes))
+	//log.Println(string(bytes))
 
 	return bytes, nil
 }

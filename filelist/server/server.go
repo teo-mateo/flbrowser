@@ -43,7 +43,7 @@ func checkKey(w http.ResponseWriter, r *http.Request) bool {
 }
 */
 
-func Start(port int, key string, username string, pwd string, clientDir string){
+func Start(port int, key string, expectedUsername string, expectedPwd string, clientDir string){
 
 	apiKey = key
 	if apiKey == ""{
@@ -53,73 +53,9 @@ func Start(port int, key string, username string, pwd string, clientDir string){
 	router := mux.NewRouter()
 
 	router.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request){
-
-		if checkAccessToken(r.Header.Get(ATHeader)){
-			//redirect to /
-			w.WriteHeader(http.StatusMovedPermanently)
-			w.Header().Set("Location", "/")
-		} else {
-			err := doBasicAuth(w, r, username, pwd)
-			if err != nil {
-				fmt.Println(err.Error())
-				w.Header().Set("WWW-Authenticate", "Basic")
-				w.WriteHeader(http.StatusUnauthorized)
-			} else {
-				//redirect to /
-				w.WriteHeader(http.StatusMovedPermanently)
-				w.Header().Set("Location", "/")
-			}
-		}
-
-	}).Methods("GET")
-
-	router.HandleFunc("/login2", func(w http.ResponseWriter, r *http.Request){
-		defer r.Body.Close()
-		b, err := ioutil.ReadAll(r.Body)
-		if err != nil{
-			httpError(err, w)
-			return
-		}
-		var login map[string]string
-		json.Unmarshal(b, &login)
-
-		var u, p string
-		var ok bool
-		if u, ok = login["username"]; !ok{
-			httpError(errors.New("username is mandatory"), w)
-			return
-		}
-		if p, ok = login["password"]; !ok{
-			httpError(errors.New("password is mandatory"), w)
-			return
-		}
-
-		if u == username && p == pwd {
-			//generate access token
-			at, expires, err := generateAccessToken()
-			if err != nil{
-				httpError(err, w)
-				return
-			}
-			//generate ad-hoc struct to send back access token
-			response := struct{
-				AccessToken string `json:"accessToken"`
-				Expires time.Time `json:"expires"`
-			} {
-				at, expires,
-			}
-
-			//marshal and reply with the access token
-			b, err := json.Marshal(response)
-			w.Write(b)
-			return
-		} else {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-
+		login(w, r, expectedUsername, expectedPwd)
 	}).Methods("POST")
-
+	router.HandleFunc("/logout/{token}", logout).Methods("POST");
 	router.HandleFunc("/ping",secure(ping)).Methods("GET")
 	router.HandleFunc("/categories", secure(getFLCategories)).Methods("GET", "OPTIONS")
 	router.HandleFunc("/torrents/fl/search/{searchTerm}/{category}/{page}", secure(search)).Methods(("GET"))
@@ -127,7 +63,6 @@ func Start(port int, key string, username string, pwd string, clientDir string){
 	router.HandleFunc("/torrents/rtr", secure(listRTRTorrents)).Methods("GET")
 	router.HandleFunc("/torrents/fl/{id}/download", downloadTorrent).Methods("POST")
 	router.HandleFunc("/torrents/rtr/{id}/{action}", secure(doRTRAction)).Methods("POST")
-
 
 	//serve static files
 	router.PathPrefix("/app/").Handler(http.StripPrefix("/app/", http.FileServer(http.Dir(clientDir))))
@@ -153,6 +88,59 @@ func Start(port int, key string, username string, pwd string, clientDir string){
 	}
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), handlers.CORS(opts...)(router)))
 
+}
+
+func login(w http.ResponseWriter, r *http.Request, username string, pwd string){
+	defer r.Body.Close()
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil{
+		httpError(err, w)
+		return
+	}
+	var login map[string]string
+	json.Unmarshal(b, &login)
+
+	var u, p string
+	var ok bool
+	if u, ok = login["username"]; !ok{
+		httpError(errors.New("username is mandatory"), w)
+		return
+	}
+	if p, ok = login["password"]; !ok{
+		httpError(errors.New("password is mandatory"), w)
+		return
+	}
+
+	if u == username && p == pwd {
+		//generate access token
+		at, expires, err := generateAccessToken()
+		if err != nil{
+			httpError(err, w)
+			return
+		}
+		//generate ad-hoc struct to send back access token
+		response := struct{
+			AccessToken string `json:"accessToken"`
+			Expires time.Time `json:"expires"`
+		} {
+			at, expires,
+		}
+
+		//marshal and reply with the access token
+		b, err := json.Marshal(response)
+		w.Write(b)
+		return
+	} else {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+}
+
+func logout(w http.ResponseWriter, r *http.Request){
+	token := mux.Vars(r)["token"]
+	if token != ""{
+		deleteAccessToken(token)
+	}
 }
 
 func search(w http.ResponseWriter, r *http.Request){
